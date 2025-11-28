@@ -1,0 +1,453 @@
+{
+  "info": {
+    "name": "Music Player API",
+    "_postman_id": "music-player-api-v1",
+    "description": "API REST para reproductor de música - Gestión de artistas, álbumes, canciones y playlists",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Artists",
+      "item": [
+        {
+          "name": "Listar Artistas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artists?limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["artists"],
+              "query": [
+                {"key": "limit", "value": "10"},
+                {"key": "offset", "value": "0"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Artista",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"The Beatles\",\n  \"biography\": \"Legendary rock band from Liverpool\",\n  \"country\": \"UK\",\n  \"image_url\": \"https://example.com/beatles.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/artists",
+              "host": ["{{base_url}}"],
+              "path": ["artists"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Artista",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artists/1",
+              "host": ["{{base_url}}"],
+              "path": ["artists", "1"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Artistas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artists/search?name=beatles",
+              "host": ["{{base_url}}"],
+              "path": ["artists", "search"],
+              "query": [{"key": "name", "value": "beatles"}]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Artista",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"The Beatles (Updated)\",\n  \"biography\": \"The most influential band in history\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/artists/1",
+              "host": ["{{base_url}}"],
+              "path": ["artists", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Artista",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artists/1",
+              "host": ["{{base_url}}"],
+              "path": ["artists", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Albums",
+      "item": [
+        {
+          "name": "Listar Álbumes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/albums",
+              "host": ["{{base_url}}"],
+              "path": ["albums"]
+            }
+          }
+        },
+        {
+          "name": "Crear Álbum",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Abbey Road\",\n  \"artist_id\": 1,\n  \"release_date\": \"1969-09-26\",\n  \"genre\": \"Rock\",\n  \"cover_image_url\": \"https://example.com/abbey-road.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/albums",
+              "host": ["{{base_url}}"],
+              "path": ["albums"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Álbum",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/albums/1",
+              "host": ["{{base_url}}"],
+              "path": ["albums", "1"]
+            }
+          }
+        },
+        {
+          "name": "Álbumes por Artista",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artists/1/albums",
+              "host": ["{{base_url}}"],
+              "path": ["artists", "1", "albums"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Álbum",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Abbey Road (Remastered)\",\n  \"genre\": \"Classic Rock\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/albums/1",
+              "host": ["{{base_url}}"],
+              "path": ["albums", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Álbum",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/albums/1",
+              "host": ["{{base_url}}"],
+              "path": ["albums", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Songs",
+      "item": [
+        {
+          "name": "Listar Canciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/songs",
+              "host": ["{{base_url}}"],
+              "path": ["songs"]
+            }
+          }
+        },
+        {
+          "name": "Crear Canción",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Come Together\",\n  \"artist_id\": 1,\n  \"album_id\": 1,\n  \"duration_seconds\": 259,\n  \"file_url\": \"https://example.com/come-together.mp3\",\n  \"genre\": \"Rock\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/songs",
+              "host": ["{{base_url}}"],
+              "path": ["songs"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Canción",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/songs/1",
+              "host": ["{{base_url}}"],
+              "path": ["songs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Reproducir Canción",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/songs/1/play",
+              "host": ["{{base_url}}"],
+              "path": ["songs", "1", "play"]
+            }
+          }
+        },
+        {
+          "name": "Buscar Canciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/songs/search?title=come",
+              "host": ["{{base_url}}"],
+              "path": ["songs", "search"],
+              "query": [{"key": "title", "value": "come"}]
+            }
+          }
+        },
+        {
+          "name": "Canciones por Artista",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artists/1/songs",
+              "host": ["{{base_url}}"],
+              "path": ["artists", "1", "songs"]
+            }
+          }
+        },
+        {
+          "name": "Canciones por Álbum",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/albums/1/songs",
+              "host": ["{{base_url}}"],
+              "path": ["albums", "1", "songs"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Canción",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Come Together (Remastered)\",\n  \"duration_seconds\": 260\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/songs/1",
+              "host": ["{{base_url}}"],
+              "path": ["songs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Canción",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/songs/1",
+              "host": ["{{base_url}}"],
+              "path": ["songs", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Playlists",
+      "item": [
+        {
+          "name": "Listar Playlists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists",
+              "host": ["{{base_url}}"],
+              "path": ["playlists"]
+            }
+          }
+        },
+        {
+          "name": "Crear Playlist",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Favorites\",\n  \"description\": \"Best songs ever\",\n  \"user_id\": 1,\n  \"is_public\": true,\n  \"cover_image_url\": \"https://example.com/playlist.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/playlists",
+              "host": ["{{base_url}}"],
+              "path": ["playlists"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Playlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/1",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "1"]
+            }
+          }
+        },
+        {
+          "name": "Ver Canciones de Playlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/1/songs",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "1", "songs"]
+            }
+          }
+        },
+        {
+          "name": "Agregar Canción a Playlist",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"song_id\": 1,\n  \"position\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/playlists/1/songs",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "1", "songs"]
+            }
+          }
+        },
+        {
+          "name": "Playlists por Usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/1/playlists",
+              "host": ["{{base_url}}"],
+              "path": ["users", "1", "playlists"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Playlist",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Top Favorites\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/playlists/1",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Canción de Playlist",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/1/songs/1",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "1", "songs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Playlist",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/playlists/1",
+              "host": ["{{base_url}}"],
+              "path": ["playlists", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

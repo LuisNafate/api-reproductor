@@ -1,0 +1,369 @@
+{
+  "info": {
+    "name": "Music Player API - JWT",
+    "description": "API con autenticación JWT para gestión de música. Incluye registro, login y endpoints protegidos con roles.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8080",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string",
+      "description": "Token JWT obtenido del login. Se actualiza automáticamente."
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Endpoints de autenticación (públicos)",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Registrar un nuevo usuario. Por defecto se crea con rol USER."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Guardar el token automáticamente",
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('jwt_token', jsonData.token);",
+                  "    console.log('Token JWT guardado:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Login de usuario existente. Retorna token JWT válido por 24 horas."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Artists",
+      "description": "Endpoints de artistas. GET públicos, POST/PUT/DELETE requieren autenticación y rol ADMIN",
+      "item": [
+        {
+          "name": "Get All Artists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/artists?limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "artists"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Obtener todos los artistas (público, no requiere autenticación)"
+          }
+        },
+        {
+          "name": "Search Artists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/artists/search?name=Test",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "artists", "search"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Test"
+                }
+              ]
+            },
+            "description": "Buscar artistas por nombre (público)"
+          }
+        },
+        {
+          "name": "Get Artist by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/artists/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "artists", "1"]
+            },
+            "description": "Obtener artista por ID (público)"
+          }
+        },
+        {
+          "name": "Create Artist (Protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Artist\",\n  \"bio\": \"This is a test artist created via API\",\n  \"imageUrl\": \"https://example.com/artist.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/artists",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "artists"]
+            },
+            "description": "Crear nuevo artista. Requiere JWT token y rol ADMIN."
+          }
+        },
+        {
+          "name": "Update Artist (Protected)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Artist Name\",\n  \"bio\": \"Updated bio\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/artists/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "artists", "1"]
+            },
+            "description": "Actualizar artista existente. Requiere JWT token y rol ADMIN."
+          }
+        },
+        {
+          "name": "Delete Artist (Protected)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/artists/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "artists", "1"]
+            },
+            "description": "Eliminar artista. Requiere JWT token y rol ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Albums",
+      "description": "Endpoints de álbumes (públicos por ahora)",
+      "item": [
+        {
+          "name": "Get All Albums",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/albums?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "albums"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Album by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/albums/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "albums", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "File Upload (AWS S3)",
+      "description": "Endpoints para subir imágenes a AWS S3. Requieren autenticación JWT.",
+      "item": [
+        {
+          "name": "Upload Image (Multipart)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Archivo de imagen a subir"
+                },
+                {
+                  "key": "folder",
+                  "value": "artists",
+                  "type": "text",
+                  "description": "Carpeta destino: artists, albums, songs, playlists"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/upload/image",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "upload", "image"]
+            },
+            "description": "Sube una imagen a S3 usando multipart/form-data. Retorna file_url y presigned_url."
+          }
+        },
+        {
+          "name": "Generate Presigned Upload URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_name\": \"artist-photo.jpg\",\n  \"content_type\": \"image/jpeg\",\n  \"folder\": \"artists\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/upload/presigned-url",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "upload", "presigned-url"]
+            },
+            "description": "Genera URL pre-firmada para upload directo desde cliente (válida 1 hora)."
+          }
+        },
+        {
+          "name": "Delete File (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/upload/artists/uuid-timestamp.jpg",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "upload", "artists", "uuid-timestamp.jpg"]
+            },
+            "description": "Elimina archivo de S3. Requiere rol ADMIN. Reemplazar uuid-timestamp.jpg con el file_key real."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
