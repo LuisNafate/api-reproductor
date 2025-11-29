@@ -20,7 +20,7 @@ fun Application.configureRouting() {
     // Inicializar servicios
     val artistService = ArtistService(artistRepository, s3Service)
     val albumService = AlbumService(albumRepository, s3Service)
-    val songService = SongService(songRepository)
+    val songService = SongService(songRepository, s3Service)
     val playlistService = PlaylistService(playlistRepository)
     val authService = AuthService()
     

@@ -10,10 +10,10 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.authRoutes(authService: AuthService) {
-    route("/api/v1/auth") {
+    route("/auth") {
         
         /**
-         * POST /api/v1/auth/register
+         * POST /auth/register
          * Registrar nuevo usuario
          */
         post("/register") {
@@ -32,7 +32,7 @@ fun Route.authRoutes(authService: AuthService) {
         }
         
         /**
-         * POST /api/v1/auth/login
+         * POST /auth/login
          * Login de usuario
          */
         post("/login") {

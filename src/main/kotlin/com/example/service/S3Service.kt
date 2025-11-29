@@ -13,16 +13,27 @@ import kotlin.time.Duration.Companion.hours
 
 class S3Service {
     
-    private val bucketName = EnvLoader.get("AWS_BUCKET", "music-player-bucket")
-    private val region = EnvLoader.get("AWS_REGION", "us-east-1")
-    private val accessKey = EnvLoader.get("AWS_ACCESS_KEY", "")
-    private val secretKey = EnvLoader.get("AWS_SECRET_KEY", "")
+    private val bucketName = EnvLoader.get("AWS_BUCKET", "music-player-bucket") ?: "music-player-bucket"
+    private val region = EnvLoader.get("AWS_REGION", "us-east-1") ?: "us-east-1"
+    private val accessKey = EnvLoader.get("AWS_ACCESS_KEY_ID", "") ?: ""
+    private val secretKey = EnvLoader.get("AWS_SECRET_ACCESS_KEY", "") ?: ""
+    private val sessionToken = EnvLoader.get("AWS_SESSION_TOKEN", null)
+    
+    init {
+        println("🔧 S3Service inicializado:")
+        println("   - Bucket: $bucketName")
+        println("   - Region: $region")
+        println("   - Access Key: ${if (accessKey.isNotEmpty()) accessKey.take(10) + "..." else "VACÍO"}")
+        println("   - Secret Key: ${if (secretKey.isNotEmpty()) "***" + secretKey.takeLast(4) else "VACÍO"}")
+        println("   - Session Token: ${sessionToken?.take(20)?.plus("...") ?: "null"}")
+    }
     
     private val s3Client = S3Client {
         region = this@S3Service.region
         credentialsProvider = StaticCredentialsProvider {
             accessKeyId = this@S3Service.accessKey
             secretAccessKey = this@S3Service.secretKey
+            sessionToken = this@S3Service.sessionToken
         }
     }
     
@@ -34,20 +45,34 @@ class S3Service {
      * @return KEY del archivo (solo el nombre único, no URL)
      */
     suspend fun uploadFile(fileName: String, fileBytes: ByteArray, contentType: String): String {
+        println("📤 Subiendo archivo a S3...")
+        println("   - fileName: $fileName")
+        println("   - fileBytes.size: ${fileBytes.size}")
+        println("   - contentType: $contentType")
+        
         // Generar nombre único con UUID
         val uniqueFileName = "${UUID.randomUUID()}-$fileName"
+        println("   - uniqueFileName: $uniqueFileName")
         
-        val putObjectRequest = PutObjectRequest {
-            bucket = bucketName
-            this.key = uniqueFileName
-            this.contentType = contentType
-            body = ByteStream.fromBytes(fileBytes)
+        try {
+            val putObjectRequest = PutObjectRequest {
+                bucket = bucketName
+                this.key = uniqueFileName
+                this.contentType = contentType
+                body = ByteStream.fromBytes(fileBytes)
+            }
+            
+            println("   - Enviando a S3...")
+            s3Client.putObject(putObjectRequest)
+            println("✅ Archivo subido exitosamente a S3: $uniqueFileName")
+            
+            // Retornar solo la KEY (nombre del archivo), NO la URL
+            return uniqueFileName
+        } catch (e: Exception) {
+            println("❌ Error al subir archivo a S3: ${e.message}")
+            e.printStackTrace()
+            throw e
         }
-        
-        s3Client.putObject(putObjectRequest)
-        
-        // Retornar solo la KEY (nombre del archivo), NO la URL
-        return uniqueFileName
     }
     
     /**

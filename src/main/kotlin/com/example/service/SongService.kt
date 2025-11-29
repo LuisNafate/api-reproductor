@@ -10,8 +10,51 @@ import java.util.UUID
 /**
  * Servicio para la lógica de negocio de Canciones
  */
-class SongService(private val repository: SongRepository) {
+class SongService(
+    private val repository: SongRepository,
+    private val s3Service: S3Service
+) {
     
+    /**
+     * Crear canción con multipart upload (archivo de audio MP3)
+     */
+    suspend fun createSongWithAudio(
+        title: String,
+        artistId: UUID,
+        albumId: UUID?,
+        durationSeconds: Int,
+        audioBytes: ByteArray,
+        genre: String?
+    ): SongResponse? {
+        return try {
+            // 1. Subir archivo MP3 a S3
+            val audioKey = s3Service.uploadFile(
+                fileName = "song-$title-${UUID.randomUUID()}.mp3",
+                fileBytes = audioBytes,
+                contentType = "audio/mpeg"
+            )
+            
+            // 2. Crear canción en BD con la KEY de S3
+            val song = repository.create(
+                title = title,
+                artistId = artistId,
+                albumId = albumId,
+                durationSeconds = durationSeconds,
+                fileUrl = audioKey,
+                genre = genre
+            )
+            
+            // 3. Generar URL firmada para la respuesta
+            val presignedUrl = s3Service.getPresignedUrl(audioKey)
+            song.toResponseWithPresignedUrl(presignedUrl)
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    /**
+     * Crear canción con JSON (fileUrl ya debe estar en S3)
+     */
     suspend fun createSong(request: SongRequest): SongResponse? {
         return try {
             val artistUuid = UUID.fromString(request.artistId)
@@ -110,6 +153,19 @@ class SongService(private val repository: SongRepository) {
         albumId = albumId?.toString(),
         durationSeconds = durationSeconds,
         fileUrl = fileUrl,
+        genre = genre,
+        playCount = playCount,
+        createdAt = createdAt,
+        updatedAt = updatedAt
+    )
+    
+    private fun Song.toResponseWithPresignedUrl(presignedUrl: String) = SongResponse(
+        id = id.toString(),
+        title = title,
+        artistId = artistId.toString(),
+        albumId = albumId?.toString(),
+        durationSeconds = durationSeconds,
+        fileUrl = presignedUrl,  // URL firmada en lugar de KEY
         genre = genre,
         playCount = playCount,
         createdAt = createdAt,

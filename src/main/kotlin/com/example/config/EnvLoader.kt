@@ -17,8 +17,20 @@ object EnvLoader {
     private fun loadEnvFile() {
         val envFile = File(".env")
         if (envFile.exists()) {
-            envFile.inputStream().use { stream ->
-                properties.load(stream)
+            envFile.readLines().forEach { line ->
+                val trimmed = line.trim()
+                // Ignorar líneas vacías y comentarios
+                if (trimmed.isNotEmpty() && !trimmed.startsWith("#")) {
+                    val parts = trimmed.split("=", limit = 2)
+                    if (parts.size == 2) {
+                        val key = parts[0].trim()
+                        val value = parts[1].trim()
+                        properties.setProperty(key, value)
+                        if (key.startsWith("AWS_")) {
+                            println("   📝 Cargada: $key = ${value.take(10)}...")
+                        }
+                    }
+                }
             }
             println("Loaded .env file successfully")
         } else {
@@ -30,7 +42,19 @@ object EnvLoader {
      * Obtiene una variable de entorno, primero del .env, luego del sistema, o retorna el default
      */
     fun get(key: String, default: String? = null): String? {
-        return properties.getProperty(key) ?: System.getenv(key) ?: default
+        val fromProperties = properties.getProperty(key)
+        val fromSystem = System.getenv(key)
+        val result = fromProperties ?: fromSystem ?: default
+        
+        if (key.startsWith("AWS_")) {
+            println("  🔑 EnvLoader.get('$key'):")
+            println("     - From .env: ${fromProperties?.take(10) ?: "null"}")
+            println("     - From system: ${fromSystem?.take(10) ?: "null"}")
+            println("     - Default: ${default?.take(10) ?: "null"}")
+            println("     - Result: ${result?.take(10) ?: "null"}")
+        }
+        
+        return result
     }
     
     /**

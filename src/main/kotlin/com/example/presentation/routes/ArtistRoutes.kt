@@ -88,27 +88,51 @@ fun Route.artistRoutes(service: ArtistService) {
                     var country: String? = null
                     var imageBytes: ByteArray? = null
                     
+                    println("🔍 Procesando multipart para crear artista...")
+                    
                     multipart.forEachPart { part ->
+                        println("📦 Parte recibida: ${part.name} - Tipo: ${part::class.simpleName}")
                         when (part) {
                             is PartData.FormItem -> {
                                 when (part.name) {
-                                    "name" -> name = part.value
-                                    "biography" -> biography = part.value
-                                    "country" -> country = part.value
+                                    "name" -> {
+                                        name = part.value
+                                        println("✅ Name: $name")
+                                    }
+                                    "biography" -> {
+                                        biography = part.value
+                                        println("✅ Biography: $biography")
+                                    }
+                                    "country" -> {
+                                        country = part.value
+                                        println("✅ Country: $country")
+                                    }
                                 }
                             }
                             is PartData.FileItem -> {
                                 if (part.name == "image") {
                                     imageBytes = part.streamProvider().readBytes()
+                                    println("✅ Image recibida: ${imageBytes?.size ?: 0} bytes")
+                                    println("   Content-Type: ${part.contentType}")
+                                    println("   Original filename: ${part.originalFileName}")
                                 }
                             }
-                            else -> {}
+                            else -> {
+                                println("⚠️ Tipo de parte no manejada: ${part::class.simpleName}")
+                            }
                         }
                         part.dispose()
                     }
                     
+                    println("📊 Resumen de datos recibidos:")
+                    println("   - name: '$name' (isEmpty: ${name.isEmpty()})")
+                    println("   - biography: ${biography ?: "null"}")
+                    println("   - country: ${country ?: "null"}")
+                    println("   - imageBytes: ${imageBytes?.size ?: 0} bytes (isNull: ${imageBytes == null})")
+                    
                     // Validación
                     if (name.isEmpty()) {
+                        println("❌ Error: name está vacío")
                         call.respond(HttpStatusCode.BadRequest, ErrorResponse(
                             error = "Bad Request",
                             message = "El campo 'name' es obligatorio",
@@ -117,20 +141,25 @@ fun Route.artistRoutes(service: ArtistService) {
                         return@post
                     }
                     
-                    if (imageBytes == null) {
+                    if (imageBytes == null || imageBytes!!.isEmpty()) {
+                        println("❌ Error: imageBytes es null o está vacío")
                         call.respond(HttpStatusCode.BadRequest, ErrorResponse(
                             error = "Bad Request",
-                            message = "Debe proporcionar una imagen",
+                            message = "Debe proporcionar una imagen válida",
                             status = 400
                         ))
                         return@post
                     }
                     
+                    println("🚀 Creando artista con imagen de ${imageBytes!!.size} bytes...")
                     // Crear artista con imagen
                     val artist = service.createArtist(name, biography, country, imageBytes!!)
+                    println("✅ Artista creado exitosamente: ${artist.id}")
                     call.respond(HttpStatusCode.Created, artist)
                     
                 } catch (e: Exception) {
+                    println("❌ Error al crear artista: ${e.message}")
+                    e.printStackTrace()
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(
                         error = "Internal Server Error",
                         message = "Error al crear artista: ${e.message}",
