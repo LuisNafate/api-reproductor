@@ -1,0 +1,584 @@
+{
+  "info": {
+    "name": "Spotify API - Music Player",
+    "description": "API REST para gestión de artistas, álbumes y canciones con almacenamiento en S3 y autenticación JWT",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "    console.log(\"Token guardado: \" + jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Autenticación de usuario. Retorna un token JWT que se guarda automáticamente en la variable de colección."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Artists",
+      "item": [
+        {
+          "name": "Get All Artists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/artists/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", "all"]
+            },
+            "description": "Obtener todos los artistas. No requiere autenticación."
+          }
+        },
+        {
+          "name": "Get Artist by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/artists/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID del artista"
+                }
+              ]
+            },
+            "description": "Obtener un artista específico por su UUID. No requiere autenticación."
+          }
+        },
+        {
+          "name": "Create Artist (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Bad Bunny",
+                  "type": "text",
+                  "description": "Nombre del artista"
+                },
+                {
+                  "key": "genre",
+                  "value": "Reggaeton",
+                  "type": "text",
+                  "description": "Género musical (opcional)"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Imagen del artista (JPG/PNG)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/artists",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists"]
+            },
+            "description": "Crear un nuevo artista con imagen. Requiere rol ADMIN y token JWT."
+          }
+        },
+        {
+          "name": "Update Artist (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Bad Bunny Updated",
+                  "type": "text",
+                  "description": "Nuevo nombre (opcional)"
+                },
+                {
+                  "key": "genre",
+                  "value": "Urban Latino",
+                  "type": "text",
+                  "description": "Nuevo género (opcional)"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Nueva imagen (opcional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/artists/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID del artista a actualizar"
+                }
+              ]
+            },
+            "description": "Actualizar un artista existente. Todos los campos son opcionales. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "Delete Artist (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/artists/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["artists", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID del artista a eliminar"
+                }
+              ]
+            },
+            "description": "Eliminar un artista. Esto también eliminará todos sus álbumes y canciones (CASCADE). Requiere rol ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Albums",
+      "item": [
+        {
+          "name": "Get All Albums",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/albums/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["albums", "all"]
+            },
+            "description": "Obtener todos los álbumes. No requiere autenticación."
+          }
+        },
+        {
+          "name": "Get Album by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/albums/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["albums", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID del álbum"
+                }
+              ]
+            },
+            "description": "Obtener un álbum específico por su UUID. No requiere autenticación."
+          }
+        },
+        {
+          "name": "Get Albums by Artist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/albums/artist/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["albums", "artist", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID del artista"
+                }
+              ]
+            },
+            "description": "Filtrar álbumes por artista. No requiere autenticación."
+          }
+        },
+        {
+          "name": "Create Album (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Un Verano Sin Ti",
+                  "type": "text",
+                  "description": "Nombre del álbum"
+                },
+                {
+                  "key": "year",
+                  "value": "2022",
+                  "type": "text",
+                  "description": "Año de lanzamiento"
+                },
+                {
+                  "key": "artistId",
+                  "value": "",
+                  "type": "text",
+                  "description": "UUID del artista"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Portada del álbum (JPG/PNG)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/albums",
+              "host": ["{{baseUrl}}"],
+              "path": ["albums"]
+            },
+            "description": "Crear un nuevo álbum con portada. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "Update Album (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Un Verano Sin Ti (Deluxe)",
+                  "type": "text",
+                  "description": "Nuevo nombre (opcional)"
+                },
+                {
+                  "key": "year",
+                  "value": "2023",
+                  "type": "text",
+                  "description": "Nuevo año (opcional)"
+                },
+                {
+                  "key": "artistId",
+                  "value": "",
+                  "type": "text",
+                  "description": "Nuevo artistId (opcional)"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": [],
+                  "description": "Nueva portada (opcional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/albums/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["albums", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID del álbum a actualizar"
+                }
+              ]
+            },
+            "description": "Actualizar un álbum existente. Todos los campos son opcionales. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "Delete Album (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/albums/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["albums", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID del álbum a eliminar"
+                }
+              ]
+            },
+            "description": "Eliminar un álbum. Esto también eliminará todas sus canciones (CASCADE). Requiere rol ADMIN."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tracks",
+      "item": [
+        {
+          "name": "Get All Tracks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", "all"]
+            },
+            "description": "Obtener todas las canciones. No requiere autenticación."
+          }
+        },
+        {
+          "name": "Get Track by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID de la canción"
+                }
+              ]
+            },
+            "description": "Obtener una canción específica por su UUID. No requiere autenticación."
+          }
+        },
+        {
+          "name": "Create Track (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Moscow Mule",
+                  "type": "text",
+                  "description": "Nombre de la canción"
+                },
+                {
+                  "key": "duration",
+                  "value": "242000",
+                  "type": "text",
+                  "description": "Duración en milisegundos"
+                },
+                {
+                  "key": "albumId",
+                  "value": "",
+                  "type": "text",
+                  "description": "UUID del álbum"
+                },
+                {
+                  "key": "artistId",
+                  "value": "",
+                  "type": "text",
+                  "description": "UUID del artista"
+                },
+                {
+                  "key": "audio",
+                  "type": "file",
+                  "src": [],
+                  "description": "Archivo de audio (MP3/WAV)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tracks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks"]
+            },
+            "description": "Crear una nueva canción con archivo de audio. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "Update Track (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Moscow Mule (Remix)",
+                  "type": "text",
+                  "description": "Nuevo nombre (opcional)"
+                },
+                {
+                  "key": "duration",
+                  "value": "250000",
+                  "type": "text",
+                  "description": "Nueva duración (opcional)"
+                },
+                {
+                  "key": "albumId",
+                  "value": "",
+                  "type": "text",
+                  "description": "Nuevo albumId (opcional)"
+                },
+                {
+                  "key": "artistId",
+                  "value": "",
+                  "type": "text",
+                  "description": "Nuevo artistId (opcional)"
+                },
+                {
+                  "key": "audio",
+                  "type": "file",
+                  "src": [],
+                  "description": "Nuevo archivo de audio (opcional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tracks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID de la canción a actualizar"
+                }
+              ]
+            },
+            "description": "Actualizar una canción existente. Todos los campos son opcionales. Requiere rol ADMIN."
+          }
+        },
+        {
+          "name": "Delete Track (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tracks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tracks", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": "UUID de la canción a eliminar"
+                }
+              ]
+            },
+            "description": "Eliminar una canción. Requiere rol ADMIN."
+          }
+        }
+      ]
+    }
+  ]
+}

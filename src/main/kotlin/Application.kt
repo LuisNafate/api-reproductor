@@ -1,30 +1,38 @@
-package com.example
+package com.spotify
 
-import com.example.config.DatabaseFactory
-import com.example.config.configureCORS
-import com.example.config.configureLogging
-import com.example.config.configureStatusPages
-import com.example.config.configureSecurity
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.routing.*
+import com.spotify.plugins.*
+import com.spotify.routes.*
+import com.spotify.services.*
 
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
-}
+
+
+
+fun main(args: Array<String>) = EngineMain.main(args)
 
 fun Application.module() {
-    // Inicializar base de datos
-    DatabaseFactory.init()
-    
-    // Configurar plugins
-    configureLogging()
-    configureCORS()
-    configureStatusPages()
+    // 1. Plugins
     configureSerialization()
+    configureDatabases()
     configureSecurity()
-    
-    // Configurar rutas
-    configureRouting()
+
+
+
+    // 2. Servicios
+    val secret = environment.config.property("jwt.secret").getString()
+    val issuer = environment.config.property("jwt.domain").getString()
+    val audience = environment.config.property("jwt.audience").getString()
+    val authService = AuthService(secret, issuer, audience)
+
+    val s3Service = S3Service(environment.config)
+    val artistService = ArtistService(s3Service)
+
+    val albumService = AlbumService(s3Service)
+
+    val songService = SongService(s3Service)
+
+    // 3. Rutas
+    configureRouting(authService, artistService, albumService, songService)
 }

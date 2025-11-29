@@ -1,24 +1,26 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
-group = "com.example"
+group = "com.spotify"
 version = "0.0.1"
 
 val ktor_version="3.3.2"
 
 application {
-    mainClass = "com.example.ApplicationKt"
+    mainClass = "io.ktor.server.netty.EngineMain"
+    applicationDefaultJvmArgs = listOf("-Dconfig.resource=application.yaml")
 }
 
 tasks {
     shadowJar {
         mergeServiceFiles()
         manifest {
-            attributes(mapOf("Main-Class" to "com.example.ApplicationKt"))
+            attributes(mapOf("Main-Class" to "io.ktor.server.netty.EngineMain"))
         }
-        archiveFileName.set("mi-api.jar")
+        archiveFileName.set("spotify-api.jar")
     }
 }
 
@@ -60,9 +62,10 @@ dependencies {
     // BCrypt para password hashing
     implementation("org.mindrot:jbcrypt:0.4")
     
-    // AWS S3 SDK
+    // AWS S3 SDK con presigners
     implementation("aws.sdk.kotlin:s3:1.0.30")
     implementation("aws.smithy.kotlin:http-client-engine-okhttp:1.0.10")
+    implementation("aws.sdk.kotlin:aws-config:1.0.30")
     
     // Multipart file upload
     implementation("io.ktor:ktor-server-partial-content:$ktor_version")
