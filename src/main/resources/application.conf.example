@@ -1,0 +1,31 @@
+ktor {
+    deployment {
+        port = 8080
+        port = ${?PORT}
+    }
+    application {
+        modules = [ com.spotify.ApplicationKt.module ]
+    }
+}
+
+storage {
+    driverClassName = "org.postgresql.Driver"
+    jdbcUrl = "jdbc:postgresql://localhost:5432/music_player"
+    username = "music_admin"
+    password = "music1234"
+}
+
+jwt {
+    secret = "my-secret-key-change-in-production-please-use-strong-secret"
+    domain = "http://0.0.0.0:8080"
+    audience = "http://0.0.0.0:8080/auth"
+    realm = "Access to 'auth'"
+}
+
+aws {
+    bucketName = "your-bucket-name"
+    region = "us-east-1"
+    accessKey = "YOUR_AWS_ACCESS_KEY"
+    secretKey = "YOUR_AWS_SECRET_KEY"
+    sessionToken = "YOUR_AWS_SESSION_TOKEN"
+}
